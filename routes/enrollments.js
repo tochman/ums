@@ -2,6 +2,27 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
+router.get("/", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        e.enrollment_date,
+        s.name AS student_name,
+        c.title AS course_name
+      FROM enrollments e
+      JOIN students s ON e.student_id = s.id
+      JOIN courses c ON e.course_id = c.id
+      ORDER BY e.enrollment_date DESC;
+    `;
+
+    const result = await pool.query(query);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching enrollments:", err.message);
+    res.status(500).json({ error: "Server error. Please try again later." });
+  }
+});
+
 router.post("/course/:course_id", async (req, res) => {
   const { course_id } = req.params;
   const { student_id } = req.body;
